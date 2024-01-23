@@ -1,0 +1,293 @@
+
+Private Sub CommandButton2_Click()
+
+End Sub
+
+Private Sub CommandButton1_Click()
+
+End Sub
+
+Private Sub Add_Button_Click()
+
+'''validation
+If Me.ComboBox_product.Value = "" Then MsgBox "Please select a Product", vbCritical
+ 
+
+
+If IsNumeric(Me.Tex_qty) = False Then MsgBox "Please enter a Quantity", vbCritical
+ 
+   
+If Me.ComboBox_type.Value = "" Then MsgBox "Please select a Type of Transaction", vbCritical
+ 
+
+''''Add data
+Dim sh As Worksheet
+Set sh = ThisWorkbook.Sheets("Sale_purchase")
+
+Dim lr As Long
+lr = Application.WorksheetFunction.CountA(sh.Range("A:A"))
+
+sh.Range("A" & lr + 1).Value = lr
+sh.Range("B" & lr + 1).Value = Me.ComboBox_product.Value
+sh.Range("C" & lr + 1).Value = Me.ComboBox_type.Value
+sh.Range("D" & lr + 1).Value = Me.Tex_qty.Value
+sh.Range("E" & lr + 1).Value = Me.Text_rate.Value
+sh.Range("F" & lr + 1).Value = Me.Text_rate.Value * Me.Tex_qty.Value
+
+If Me.ComboBox_type.Value = "Purchase" Then
+    sh.Range("G" & lr + 1).Value = "NA"
+Else
+   sh.Range("G" & lr + 1).Value = (Me.Text_rate.Value * Me.Tex_qty.Value) - Application.WorksheetFunction.VLookup(Me.ComboBox_product, ThisWorkbook.Sheets("Products_list").Range("C:E"), 3, 0) * Me.Tex_qty.Value
+End If
+
+sh.Range("H" & lr + 1).Value = Me.Text_date_transactions
+
+
+'''clear boxes
+
+Me.ComboBox_product.Value = ""
+Me.ComboBox_type.Value = ""
+Me.Tex_qty.Value = ""
+Me.Text_rate.Value = ""
+
+Call Show_Sale_Purchase_Data
+
+MsgBox "Data has been added successfully", vbInformation
+
+
+
+End Sub
+
+Private Sub ComboBox_product_Change()
+
+Dim sh As Worksheet
+Set sh = ThisWorkbook.Sheets("Products_List")
+
+
+If Me.ComboBox_product.Value = "" Or Me.ComboBox_type.Value = "" Then Me.Text_rate.Value = ""
+
+If Me.ComboBox_type.Value = "Sale" Then
+    Me.Text_rate.Value = Application.WorksheetFunction.VLookup(Me.ComboBox_product, sh.Range("C:E"), 2, 0)
+ElseIf Me.ComboBox_type.Value = "Purchase" Then
+    Me.Text_rate.Value = Application.WorksheetFunction.VLookup(Me.ComboBox_product, sh.Range("C:E"), 3, 0)
+
+End If
+  On Error GoTo 0
+  
+
+End Sub
+
+Private Sub ComboBox_type_Change()
+
+
+Dim sh As Worksheet
+Set sh = ThisWorkbook.Sheets("Products_List")
+
+If Me.ComboBox_product.Value = "" Or Me.ComboBox_type.Value = "" Then Me.Text_rate.Value = ""
+
+If Me.ComboBox_type.Value = "Sale" Then
+    Me.Text_rate.Value = Application.WorksheetFunction.VLookup(Me.ComboBox_product, sh.Range("C:E"), 2, 0)
+ElseIf Me.ComboBox_type = "Purchase" Then
+    Me.Text_rate.Value = Application.WorksheetFunction.VLookup(Me.ComboBox_product, sh.Range("C:E"), 3, 0)
+
+End If
+
+End Sub
+
+Private Sub Frame_Transactions_Click()
+
+End Sub
+
+Private Sub Image12_click()
+Call Calendar.SlectedDate(Me.Text_date_transactions)
+End Sub
+
+Private Sub Image2_click()
+
+Call Calendar.SlectedDate(Me.Text_End_Date)
+
+End Sub
+
+Private Sub Image3_click()
+Call Calendar.SlectedDate(Me.Text_Start_Date)
+
+
+End Sub
+
+Private Sub Label1_Click()
+
+End Sub
+
+Private Sub Label15_Click()
+
+End Sub
+
+Private Sub Label16_Click()
+
+End Sub
+
+Private Sub Label19_Click()
+
+End Sub
+
+Private Sub Label2_Click()
+
+End Sub
+
+Private Sub Label3_Click()
+
+End Sub
+
+Private Sub Label4_Click()
+
+End Sub
+
+Private Sub List_button_Click()
+
+
+
+End Sub
+
+Private Sub ListBox2_Click()
+
+
+End Sub
+
+Private Sub Label9_Click()
+
+End Sub
+
+Private Sub OptionButton1_Click()
+Call Show_Sale_Purchase_Data
+
+End Sub
+
+Private Sub OptionButton2_Click()
+Call Show_Sale_Purchase_Data
+
+End Sub
+
+Private Sub OptionButton3_Click()
+Call Show_Sale_Purchase_Data
+
+End Sub
+
+Private Sub Product_List_button_Click()
+
+ Product_List.Show
+
+End Sub
+
+Private Sub Sale_Purchase_ListBox_Click()
+
+
+End Sub
+
+Private Sub Save_button_Click()
+
+ThisWorkbook.Save
+MsgBox "Data Saved"
+
+End Sub
+
+Private Sub Tex_qty_Change()
+
+End Sub
+
+Private Sub Text_rate_Change()
+
+End Sub
+
+Private Sub UserForm_Initialize()
+
+Me.Text_Start_Date.Value = Format(Date, "D-MMM-YYYY")
+Me.Text_End_Date.Value = Format(Date, "D-MMM-YYYY")
+Me.Text_date_transactions.Value = Format(Date, "D-MMM-YYYY")
+
+'''drop down for type
+
+
+With Me.ComboBox_type
+    .AddItem ""
+    .AddItem "Sale"
+    .AddItem "Purchase"
+    
+End With
+
+
+Call Add_Product_List
+Call Show_Sale_Purchase_Data
+
+End Sub
+
+Sub Add_Product_List()
+
+Dim sh As Worksheet
+Set sh = ThisWorkbook.Sheets("Products_List")
+
+Dim i As Integer
+
+Me.ComboBox_product.Clear
+Me.ComboBox_product.AddItem ""
+
+For i = 2 To Application.WorksheetFunction.CountA(sh.Range("B:B"))
+    Me.ComboBox_product.AddItem sh.Range("C" & i)
+Next i
+
+End Sub
+
+Sub Show_Sale_Purchase_Data()
+
+Dim dsh As Worksheet
+Dim sh As Worksheet
+
+Set dsh = ThisWorkbook.Sheets("Sale_Purchase")
+
+Set sh = ThisWorkbook.Sheets("Sale_purchase_Display")
+
+dsh.AutoFilterMode = False
+
+dsh.Range("H:H").NumberFormat = "DD-MMM-YYYY"
+
+''''''''Put Filter here
+'''filtering the date
+
+dsh.UsedRange.AutoFilter 8, ">=" & Me.Text_Start_Date.Value, xlAnd, "<=" & Me.Text_End_Date.Value
+
+
+'''filtering with option buttons
+
+If Me.OptionButton2.Value = True Then
+    dsh.UsedRange.AutoFilter 3, "Purchase"
+End If
+
+If Me.OptionButton3.Value = True Then
+    dsh.UsedRange.AutoFilter 3, "Sale"
+End If
+
+''''Display from workshet Purchase_sale to worksheet Display
+sh.UsedRange.Clear
+
+dsh.UsedRange.Copy
+sh.Range("A1").PasteSpecial xlPasteValuesAndNumberFormats
+
+dsh.AutoFilterMode = False
+
+'''Display the copied data
+'''lr is Last row
+
+Dim lr As Long
+lr = Application.WorksheetFunction.CountA(sh.Range("A:A"))
+If lr = 1 Then lr = 2
+
+With Me.Sale_Purchase_ListBox
+    .ColumnCount = 8
+    .ColumnHeads = True
+    .ColumnWidths = "0,120,70,70,70,70,70,70"
+    .RowSource = sh.Name & "!A2:H" & lr
+
+End With
+
+
+End Sub
+
